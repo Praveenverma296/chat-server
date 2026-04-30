@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Chat App</title>
+  <style>
+    body { font-family: Arial; text-align: center; }
+    #chat { width: 300px; margin: auto; }
+    #messages { border: 1px solid #ccc; height: 200px; overflow-y: scroll; margin-bottom: 10px; padding: 5px; }
+    input { margin: 5px; padding: 5px; }
+  </style>
+</head>
+<body>
+
+  <h2>💬 Real-Time Chat</h2>
+
+  <div id="chat">
+    <input id="username" placeholder="Enter username" /><br>
+    <input id="room" placeholder="Enter room name" /><br>
+    <button onclick="joinRoom()">Join Room</button>
+
+    <div id="messages"></div>
+
+    <input id="message" placeholder="Type message" />
+    <button onclick="sendMessage()">Send</button>
+  </div>
+
+  <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+  <script>
+    const socket = io("http://localhost:5001");
+
+    let currentRoom = "";
+    let username = "";
+
+    function joinRoom() {
+      username = document.getElementById("username").value;
+      currentRoom = document.getElementById("room").value;
+
+      socket.emit("join_room", currentRoom);
+      alert("Joined room: " + currentRoom);
+    }
+
+    function sendMessage() {
+      const msg = document.getElementById("message").value;
+
+      const data = {
+        room: currentRoom,
+        author: username,
+        message: msg
+      };
+
+      socket.emit("send_message", data);
+      displayMessage(data);
+    }
+
+    socket.on("receive_message", (data) => {
+      displayMessage(data);
+    });
+
+    function displayMessage(data) {
+      const messages = document.getElementById("messages");
+      const p = document.createElement("p");
+      p.innerText = data.author + ": " + data.message;
+      messages.appendChild(p);
+    }
+  </script>
+
+</body>
+</html>
